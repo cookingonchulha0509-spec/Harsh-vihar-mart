@@ -1,538 +1,436 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="google-site-verification" content="YlSD7rdtt6zZC75s1tWKQddJrJvlzrRU1m019yG4APE" />
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartMart</title>
-    <!-- Google Fonts and Icons -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <!-- Razorpay Checkout Script -->
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Battletruth AI Support</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        :root {
-            --primary-color: #27ae60;
-            --secondary-color: #2c3e50;
-            --background-color: #f4f6f9;
-            --card-bg: #ffffff;
-            --text-color: #333;
-            --light-gray: #ecf0f1;
-            --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            --danger-color: #e74c3c;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--background-color); color: var(--text-color); overscroll-behavior-y: contain; }
-        .hidden { display: none !important; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; outline: none; }
+        body { background-color: #0F172A; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; color: #333; }
 
-        /* Main App Structure */
-        .page { padding: 20px 15px 80px 15px; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Loader */
-        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--card-bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; }
-        .spinner { border: 4px solid var(--light-gray); border-top: 4px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #loader p { margin-top: 15px; font-weight: 500; color: var(--secondary-color); }
-
-        /* Authentication Screen */
-        #auth-screen { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(45deg, var(--primary-color), #2c3e50); }
-        .auth-box { width: 90%; max-width: 400px; padding: 25px; background: var(--card-bg); border-radius: 16px; box-shadow: var(--shadow); text-align: center; }
-        .auth-tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid #eee; }
-        .auth-tabs div { flex: 1; padding: 10px; cursor: pointer; font-weight: 500; }
-        .auth-tabs div.active { color: var(--primary-color); border-bottom: 2px solid var(--primary-color); }
-        .auth-box input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
-        .auth-box button { width: 100%; padding: 12px; border: none; border-radius: 8px; background-color: var(--primary-color); color: white; font-size: 1rem; cursor: pointer; }
-        .guest-mode { margin-top: 15px; background-color: var(--light-gray); padding: 10px; border-radius: 8px; cursor: pointer; }
-        #auth-error { color: #e74c3c; margin-top: 10px; min-height: 20px; }
-
-        /* Product Grid */
-        #product-grid, #category-product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; justify-content: center; }
-        .product-card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); overflow: hidden; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.25s ease, box-shadow 0.25s ease; max-width: 220px; margin: 0 auto; position: relative; }
-        .product-card:hover { transform: translateY(-4px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12); }
-        .product-card.unavailable::after { content: 'Not Available'; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.7); color: #333; display: flex; justify-content: center; align-items: center; font-weight: 600; backdrop-filter: blur(2px); }
-        .product-card img { width: 100%; height: 150px; object-fit: contain; background-color: #fff; border-top-left-radius: 16px; border-top-right-radius: 16px; padding: 6px; transition: transform 0.3s ease; }
-        .product-card:hover img { transform: scale(1.03); }
-        .product-card-info { padding: 12px; flex-grow: 1; width: 100%; text-align: left; }
-        .product-card-info h3 { font-size: 1rem; font-weight: 600; margin-bottom: 5px; color: var(--text-color); }
-        .product-card-info .price { font-size: 1.1rem; font-weight: 600; color: var(--primary-color); margin-bottom: 10px; }
-        .product-card-info button { width: 100%; padding: 10px; margin-top: 5px; border: none; border-radius: 10px; background-color: var(--secondary-color); color: #fff; cursor: pointer; font-weight: 500; transition: background 0.25s, transform 0.25s; }
-        .product-card-info button:hover { background-color: #1f2c3b; transform: translateY(-2px); }
-        @media (max-width: 600px) { #product-grid, #category-product-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } .product-card { max-width: 100%; } }
-
-        /* Categories Screen */
-        .category-filters { display: flex; gap: 10px; margin-bottom: 20px; padding-bottom: 5px; overflow-x: auto; }
-        .category-filters .filter-btn { padding: 8px 16px; border: 1px solid #ccc; border-radius: 20px; background: var(--card-bg); cursor: pointer; white-space: nowrap; }
-        .category-filters .filter-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
-
-        /* Your Orders Screen */
-        .order-card-new { background: var(--card-bg); border-radius: 16px; box-shadow: var(--shadow); padding: 20px; margin-bottom: 20px; }
-        .order-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
-        .order-header-info h4 { margin: 0 0 5px 0; font-size: 1.1rem; }
-        .order-header-info p { margin: 0; font-size: 0.85rem; color: #777; }
-        .status-badge { display: inline-flex; align-items: center; justify-content: center; padding: 8px 18px; border-radius: 14px; font-weight: 600; font-size: 0.9rem; text-transform: capitalize; letter-spacing: 0.3px; color: #fff; background: #444; border: none; transition: all 0.3s ease; box-shadow: 0 3px 10px rgba(0,0,0,0.1); cursor: default; animation: popIn 0.35s ease; }
-        @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .status-badge:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.15); }
-        .status-Pending { background: linear-gradient(135deg, #f7b733, #f39c12); } .status-Accepted { background: linear-gradient(135deg, #3498db, #2980b9); } .status-Shipping { background: linear-gradient(135deg, #9b59b6, #8e44ad); } .status-Delivered { background: linear-gradient(135deg, #2ecc71, #27ae60); } .status-Unsuccessful, .status-Cancelled { background: linear-gradient(135deg, #e74c3c, #c0392b); }
-        .status-tracker { display: flex; justify-content: space-between; position: relative; margin: 30px 0; }
-        .status-tracker::before { content: ''; position: absolute; top: 10px; left: 0; right: 0; height: 4px; background-color: var(--light-gray); z-index: 1; }
-        .tracker-line { position: absolute; top: 10px; left: 0; height: 4px; background-color: var(--primary-color); z-index: 2; transition: width 0.5s ease; }
-        .status-step { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 3; width: 80px; text-align: center; }
-        .status-dot { width: 24px; height: 24px; border-radius: 50%; background-color: var(--light-gray); border: 4px solid var(--card-bg); transition: all 0.4s ease; }
-        .status-step.completed .status-dot { background-color: var(--primary-color); }
-        .status-step p { margin-top: 8px; font-size: 0.8rem; color: #999; font-weight: 500; }
-        .status-step.completed p { color: var(--text-color); }
-        .delivery-info-box { background: var(--light-gray); padding: 12px; border-radius: 10px; margin-top: 15px; font-size: 0.9rem; }
-        .cancel-order-btn { width: 100%; padding: 12px; margin-top: 15px; border: none; border-radius: 10px; background-color: var(--danger-color); color: white; font-weight: 600; cursor: pointer; transition: background-color 0.3s; }
-        .cancel-order-btn:hover { background-color: #c0392b; }
-
-        /* Modals & Popups */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; animation: fadeIn 0.3s ease; }
-        .modal-content { background: white; padding: 25px; border-radius: 16px; width: 90%; max-width: 450px; animation: slideUp 0.4s ease; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); }
+        .app-container { width: 100%; max-width: 440px; height: 100%; background-color: #FFFFFF; position: relative; box-shadow: 0 0 40px rgba(0, 0, 0, 0.2); overflow: hidden; display: flex; flex-direction: column; }
         
-        /* Product Detail Popup Fix */
-        #product-detail-popup .modal-content {
-          max-height: 90vh;
-          overflow-y: auto;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          padding: 20px;
-        }
+        .screen { position: absolute; inset: 0; display: flex; flex-direction: column; opacity: 0; pointer-events: none; transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease; background-color: #FFFFFF; z-index: 1; }
+        .screen.active { opacity: 1; pointer-events: all; transform: translateX(0); z-index: 2; }
+        .screen.slide-out-left { transform: translateX(-30%); opacity: 0; }
+        .screen.waiting-right { transform: translateX(100%); }
 
-        #product-detail-popup .modal-content img {
-          width: 100%;
-          max-width: 280px;
-          height: auto;
-          object-fit: contain;
-          border-radius: 12px;
-          margin-bottom: 15px;
-        }
-
-        #product-detail-popup .modal-content h2 {
-          font-size: 1.2rem;
-          margin: 10px 0 5px;
-        }
-
-        #product-detail-popup .modal-content p {
-          font-size: 0.95rem;
-          line-height: 1.4;
-          margin-bottom: 10px;
-          color: #555;
-        }
-
-        #product-detail-popup .modal-content button {
-          width: 100%;
-          max-width: 320px;
-          padding: 12px;
-          border: none;
-          border-radius: 10px;
-          margin-top: 8px;
-          font-size: 1rem;
-        }
-
-        @media (max-width: 600px) {
-          #product-detail-popup .modal-content {
-            width: 95%;
-            max-width: 380px;
-            padding: 15px;
-          }
-          #product-detail-popup .modal-content img {
-            max-width: 240px;
-          }
-        }
+        /* EMAIL SCREEN */
+        #screen-email { background-color: #F8FAFC; padding: 40px 24px; text-align: center; justify-content: center; }
+        .header-icon { width: 90px; height: 90px; background: #FFF; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15); border: 4px solid #D1E5FF; font-size: 36px; color: #2563EB; animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
         
-        .modal-content h3 { margin-top: 0; }
-        .modal-content input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; }
-        .modal-buttons { display: flex; justify-content: space-between; margin-top: 20px; gap: 10px;}
-        .modal-buttons button { flex: 1; padding: 12px 0; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
-        #confirm-order-btn { background-color: var(--primary-color); color: white; }
-        #cancel-btn { background-color: var(--light-gray); color: var(--secondary-color); }
-        @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .payment-options-container { margin-top: 20px; }
-        .payment-option { display: flex; align-items: center; padding: 15px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 10px; cursor: pointer; }
-        .payment-option input[type="radio"] { margin-right: 15px; width: 20px; height: 20px; }
-        .payment-option label { font-weight: 500; font-size: 1rem; }
+        .input-box { width: 100%; padding: 18px; font-size: 16px; border: 2px solid #E2E8F0; border-radius: 14px; margin-top: 24px; background: #FFF; transition: 0.3s; font-weight: 500; color: #0F172A; }
+        .input-box:focus { border-color: #2563EB; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+        
+        .btn-blue { background-color: #2563EB; color: #FFF; font-size: 17px; font-weight: 800; padding: 18px; border-radius: 14px; width: 100%; border: none; margin-top: 24px; cursor: pointer; box-shadow: 0 6px 0 #1D4ED8, 0 10px 20px rgba(37, 99, 235, 0.2); transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-blue:active { transform: translateY(6px); box-shadow: 0 0 0 #1D4ED8; }
 
-        /* Success Animation */
-        .success-animation { text-align: center; }
-        .tick-mark { width: 100px; height: 100px; border-radius: 50%; display: block; stroke-width: 4; stroke: #2ecc71; stroke-miterlimit: 10; box-shadow: inset 0 0 0 #2ecc71; animation: fill 0.6s ease-in-out 0.6s forwards, scale 0.4s ease-in-out 1s both; margin: 0 auto; }
-        .tick-mark__circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 4; stroke: #2ecc71; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
-        .tick-mark__check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; stroke-width: 4; stroke: #fff; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards; }
-        @keyframes stroke { 100% { stroke-dashoffset: 0; } } @keyframes scale { 0%, 100% { transform: none; } 50% { transform: scale3d(1.1, 1.1, 1); } } @keyframes fill { 100% { box-shadow: inset 0 0 0 50px #2ecc71; } }
+        /* CALL DIALER SCREEN */
+        #screen-call { background-color: #0F172A; color: #FFF; align-items: center; padding: 50px 20px 30px; }
+        .agent-avatar { width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, #1E293B, #0F172A); border: 2px solid #3B82F6; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; font-size: 44px; position: relative; z-index: 2; }
+        .pulse-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 110px; height: 110px; border-radius: 50%; border: 2px solid #3B82F6; z-index: 1; animation: radarPulse 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1); opacity: 0; }
+        .speaking .pulse-ring { animation: speakingPulse 1.5s infinite; }
+        
+        @keyframes radarPulse { 0% { width: 110px; height: 110px; opacity: 1; } 100% { width: 220px; height: 220px; opacity: 0; } }
+        @keyframes speakingPulse { 0% { width: 110px; height: 110px; opacity: 0.8; } 50% { width: 160px; height: 160px; opacity: 0.2; } 100% { width: 110px; height: 110px; opacity: 0.8; } }
 
-        /* Sticky Bottom Navigation */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 65px; background-color: var(--card-bg); box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-around; align-items: center; z-index: 100; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #999; cursor: pointer; }
-        .nav-item.active { color: var(--primary-color); }
-        .nav-item .material-icons { font-size: 28px; }
-        .nav-item .nav-label { font-size: 12px; }
+        .call-status { color: #3B82F6; font-size: 14px; margin-bottom: 40px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .dialpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; max-width: 280px; margin-top: auto; margin-bottom: 40px; }
+        .dial-btn { width: 75px; height: 75px; border-radius: 50%; background: #1E293B; border: 1px solid #334155; color: #FFF; font-size: 28px; font-weight: 600; display: flex; align-items: center; justify-content: center; margin: 0 auto; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .dial-btn:active { background: #3B82F6; transform: scale(0.92); color: #FFF; border-color: #3B82F6; }
+        .end-call-btn { background: #EF4444; color: white; width: 75px; height: 75px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; cursor: pointer; border: none; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4); margin-bottom: 20px; transition: 0.2s; }
+        .end-call-btn:active { transform: scale(0.9); }
+
+        /* OTHER ISSUE SCREEN */
+        #screen-other { padding: 40px 24px; background: #F8FAFC; }
+        textarea { width: 100%; height: 180px; border: 2px solid #E2E8F0; border-radius: 14px; padding: 16px; font-size: 15px; resize: none; outline: none; margin-bottom: 20px; background: #FFF; font-weight: 500; color: #0F172A; transition: 0.3s; }
+        textarea:focus { border-color: #2563EB; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+
+        /* SUCCESS SCREEN */
+        #screen-success { align-items: center; justify-content: center; text-align: center; padding: 32px; background: #FFF; }
+        .success-circle { width: 90px; height: 90px; background-color: #10B981; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; margin-bottom: 24px; animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3); }
+        @keyframes popIn { 0% { transform: scale(0); } 70% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        /* Global Toast */
+        #toast { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #EF4444; color: white; padding: 14px 24px; border-radius: 10px; font-weight: 700; font-size: 14px; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 100; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 90%; text-align: center; }
+        #toast.show { opacity: 1; top: 40px; }
     </style>
 </head>
 <body>
-    <div id="loader"><div class="spinner"></div><p>Connecting to SmartMart...</p></div>
-    <div id="auth-screen">
-        <div class="auth-box">
-            <div class="auth-tabs"><div id="login-tab" class="active">Login</div><div id="signup-tab">Sign Up</div></div>
-            <div id="login-form"><input type="email" id="login-email" placeholder="Email"><input type="password" id="login-password" placeholder="Password"><button id="login-btn">Login</button></div>
-            <div id="signup-form" class="hidden"><input type="text" id="signup-name" placeholder="Full Name"><input type="email" id="signup-email" placeholder="Email"><input type="password" id="signup-password" placeholder="Password"><button id="signup-btn">Sign Up</button></div>
-            <p id="auth-error"></p><div class="guest-mode" id="guest-btn">Continue as Guest</div>
+
+    <div class="app-container">
+        <div id="toast">Error Message</div>
+
+        <!-- SCREEN 1: EMAIL ENTRY -->
+        <div id="screen-email" class="screen active">
+            <div class="header-icon"><i class="fa-solid fa-headset"></i></div>
+            <h1 style="font-size: 26px; color: #0F172A; font-weight: 800; margin-bottom: 8px;">Support Center</h1>
+            <p style="color: #64748B; font-size: 15px; font-weight: 500; margin-bottom: 10px;">The app has been permanently closed.</p>
+            <p style="color: #475569; font-size: 13px; font-weight: 600; background: #E2E8F0; padding: 10px; border-radius: 8px;">Enter your email to connect with our AI for Refunds & Settlements.</p>
+            
+            <input type="email" id="userEmail" class="input-box" placeholder="Registered Email Address" required autocomplete="off">
+            
+            <button class="btn-blue" onclick="initiateCall()">
+                <i class="fa-solid fa-phone-volume"></i> Call AI Agent
+            </button>
         </div>
-    </div>
-    <div id="main-app" class="hidden">
-        <main id="app-container">
-            <section id="home-screen" class="page"><h3>Products For You</h3><div id="product-grid"></div></section>
-            <section id="category-screen" class="page hidden">
-                <h3>Categories</h3>
-                <div class="category-filters">
-                    <button class="filter-btn active" data-category="All">All</button><button class="filter-btn" data-category="Food">Food</button><button class="filter-btn" data-category="Grocery">Grocery</button><button class="filter-btn" data-category="Stationery">Stationery</button><button class="filter-btn" data-category="Fashion">Fashion</button>
-                </div>
-                <div id="category-product-grid" class="product-grid"></div>
-            </section>
-            <section id="orders-screen" class="page hidden"><h3>Your Orders</h3><div id="orders-list"></div></section>
-            <section id="profile-screen" class="page hidden">
-                <h3>Profile</h3>
-                <div class="card" style="background: white; padding: 20px; border-radius: 12px;"><p><strong>Email:</strong> <span id="user-email-display"></span></p><button id="logout-btn" style="width:100%; padding:10px; border:none; border-radius:8px; margin-top:20px; background: #e74c3c; color:white; cursor:pointer;">Logout</button></div>
-            </section>
-        </main>
-        <nav class="bottom-nav">
-            <div class="nav-item active" data-page="home-screen"><i class="material-icons">home</i><span class="nav-label">Home</span></div>
-            <div class="nav-item" data-page="category-screen"><i class="material-icons">category</i><span class="nav-label">Categories</span></div>
-            <div class="nav-item" data-page="orders-screen"><i class="material-icons">shopping_bag</i><span class="nav-label">Orders</span></div>
-            <div class="nav-item" data-page="profile-screen"><i class="material-icons">person</i><span class="nav-label">Profile</span></div>
-        </nav>
-    </div>
-    <div id="product-detail-popup" class="modal-overlay hidden"></div>
-    <div id="order-form-popup" class="modal-overlay hidden"></div>
-    <div id="success-popup" class="modal-overlay hidden"></div>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBigXJAo1FmpxH4c2gifUCoBJe2hltaoTE",
-            authDomain: "repli-mate.firebaseapp.com",
-            databaseURL: "https://repli-mate-default-rtdb.firebaseio.com",
-            projectId: "repli-mate",
-            storageBucket: "repli-mate.firebasestorage.app",
-            messagingSenderId: "316690019973",
-            appId: "1:316690019973:web:44c4595e329fb0994bdbec"
+        <!-- SCREEN 2: LIVE CALL DIALER -->
+        <div id="screen-call" class="screen waiting-right">
+            <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 40px; letter-spacing: 1px;">AI SUPPORT</h2>
+            
+            <div style="position: relative;">
+                <div class="pulse-ring" id="agent-pulse"></div>
+                <div class="agent-avatar"><i class="fa-solid fa-robot"></i></div>
+            </div>
+            
+            <h3 style="font-size: 22px; margin-bottom: 8px; font-weight: 700;">Sarah (AI)</h3>
+            <div class="call-status" id="callStatusText">Ringing...</div>
+
+            <div class="dialpad">
+                <div class="dial-btn" onclick="handleKeypad('1')">1</div>
+                <div class="dial-btn" onclick="handleKeypad('2')">2</div>
+                <div class="dial-btn" onclick="handleKeypad('3')">3</div>
+                <div class="dial-btn" onclick="handleKeypad('4')">4</div>
+                <div class="dial-btn" onclick="handleKeypad('5')">5</div>
+                <div class="dial-btn" onclick="handleKeypad('6')">6</div>
+                <div class="dial-btn" onclick="handleKeypad('7')">7</div>
+                <div class="dial-btn" onclick="handleKeypad('8')">8</div>
+                <div class="dial-btn" onclick="handleKeypad('9')">9</div>
+                <div></div>
+                <div class="dial-btn" onclick="handleKeypad('0')">0</div>
+                <div></div>
+            </div>
+
+            <button class="end-call-btn" onclick="endCall(true)"><i class="fa-solid fa-phone-slash"></i></button>
+        </div>
+
+        <!-- SCREEN 3: OTHER ISSUE BOX -->
+        <div id="screen-other" class="screen waiting-right">
+            <h2 style="font-size: 22px; font-weight: 800; color: #0F172A; margin-bottom: 10px;">Write your issue</h2>
+            <p style="color: #64748B; font-size: 14px; margin-bottom: 24px; line-height: 1.5; font-weight: 500;">Please describe your problem in detail. Submit it here and you will be connected to our Support Team on WhatsApp.</p>
+            <textarea id="customIssueText" placeholder="Type your problem here..."></textarea>
+            <button class="btn-blue" onclick="submitOtherIssue()">Submit & Chat</button>
+        </div>
+
+        <!-- SCREEN 4: SUCCESS & REDIRECT -->
+        <div id="screen-success" class="screen waiting-right">
+            <div class="success-circle"><i class="fa-solid fa-check"></i></div>
+            <h1 style="font-size: 24px; font-weight: 800; color: #0F172A; margin-bottom: 12px;">Connecting...</h1>
+            <p style="font-size: 15px; color: #475569; margin-bottom: 24px; font-weight: 500;">Routing your details securely to our WhatsApp Support Team.</p>
+            <div style="display:flex; gap:8px; justify-content:center;">
+                <div style="width:10px; height:10px; background:#2563EB; border-radius:50%; animation:bounce 1.4s infinite ease-in-out both;"></div>
+                <div style="width:10px; height:10px; background:#2563EB; border-radius:50%; animation:bounce 1.4s infinite ease-in-out both; animation-delay: 0.2s;"></div>
+                <div style="width:10px; height:10px; background:#2563EB; border-radius:50%; animation:bounce 1.4s infinite ease-in-out both; animation-delay: 0.4s;"></div>
+            </div>
+            <style>@keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }</style>
+        </div>
+
+    </div>
+
+    <!-- AUDIO FOR RINGING (Base64 so it works without external dependencies delays) -->
+    <audio id="ringtone" loop>
+        <source src="https://actions.google.com/sounds/v1/alarms/phone_ringing.ogg" type="audio/ogg">
+    </audio>
+
+    <!-- FIREBASE SDK & LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBElxrl7movpnFOxaUjWqrqBGhWVkaS3jw", 
+            authDomain: "riser-tournament.firebaseapp.com", 
+            databaseURL: "https://riser-tournament-default-rtdb.firebaseio.com", 
+            projectId: "riser-tournament", 
+            storageBucket: "riser-tournament.firebasestorage.app", 
+            messagingSenderId: "742332204527", 
+            appId: "1:742332204527:web:f0f0f939c5a78776fa621a" 
         };
-        
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
-        let currentUserId = null;
-        let productToOrder = null;
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-        const loader = document.getElementById('loader');
-        const authScreen = document.getElementById('auth-screen');
-        const mainApp = document.getElementById('main-app');
-        const pages = document.querySelectorAll('.page');
-        const navItems = document.querySelectorAll('.nav-item');
+        // GLOBALS
+        const ELEVEN_LABS_KEY = "sk_3415aa118fb9c0d60211376cd227a48c4cadb3396d8a31523";
+        const VOICE_ID = "EXAVITQu4vr4xnSDxMaL"; // Sarah
+        const SUPPORT_NUMBER = "918860204675"; 
 
-        auth.onAuthStateChanged(user => {
-            loader.classList.add('hidden');
-            if (user) {
-                currentUserId = user.uid;
-                authScreen.style.display = 'none';
-                mainApp.classList.remove('hidden');
-                initializeApp(user);
-            } else {
-                currentUserId = null;
-                authScreen.style.display = 'flex';
-                mainApp.classList.add('hidden');
-            }
-        });
-        
-        document.getElementById('login-tab').addEventListener('click', () => switchAuthTab('login'));
-        document.getElementById('signup-tab').addEventListener('click', () => switchAuthTab('signup'));
-        function switchAuthTab(tab) {
-            document.getElementById('login-tab').classList.toggle('active', tab === 'login');
-            document.getElementById('signup-tab').classList.toggle('active', tab === 'signup');
-            document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
-            document.getElementById('signup-form').classList.toggle('hidden', tab !== 'signup');
-        }
-        const handleAuthError = err => document.getElementById('auth-error').textContent = err.message;
-        document.getElementById('signup-btn').addEventListener('click', () => {
-            const name = document.getElementById('signup-name').value;
-            const email = document.getElementById('signup-email').value;
-            const password = document.getElementById('signup-password').value;
-            auth.createUserWithEmailAndPassword(email, password).then(cred => db.ref(`users/${cred.user.uid}`).set({ name, email })).catch(handleAuthError);
-        });
-        document.getElementById('login-btn').addEventListener('click', () => auth.signInWithEmailAndPassword(document.getElementById('login-email').value, document.getElementById('login-password').value).catch(handleAuthError));
-        document.getElementById('guest-btn').addEventListener('click', () => auth.signInAnonymously().catch(handleAuthError));
-        document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
-        
-        function initializeApp(user) {
-            setupNavigation();
-            showPage('home-screen');
-            loadProducts();
-            document.getElementById('user-email-display').textContent = user.isAnonymous ? 'Guest User' : user.email;
+        let userData = null;
+        let hasDeposit = false;
+        let currentState = 'INIT'; 
+        let currentAudioObj = null;
+        let inactivityTimer = null;
+        let isProcessingAudio = false;
+
+        const ui = {
+            email: document.getElementById('screen-email'),
+            call: document.getElementById('screen-call'),
+            other: document.getElementById('screen-other'),
+            success: document.getElementById('screen-success'),
+            statusText: document.getElementById('callStatusText'),
+            ringtone: document.getElementById('ringtone'),
+            pulse: document.getElementById('agent-pulse')
+        };
+
+        // EXPOSE FUNCTIONS TO WINDOW FOR HTML ONCLICK
+        window.initiateCall = initiateCall;
+        window.handleKeypad = handleKeypad;
+        window.endCall = endCall;
+        window.submitOtherIssue = submitOtherIssue;
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg; t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
         }
 
-        function setupNavigation() {
-            navItems.forEach(item => item.addEventListener('click', () => {
-                navItems.forEach(nav => nav.classList.remove('active'));
-                item.classList.add('active');
-                showPage(item.dataset.page);
-            }));
+        function switchScreen(from, to) {
+            from.classList.remove('active'); from.classList.add('slide-out-left');
+            to.classList.remove('waiting-right'); to.classList.add('active');
         }
 
-        function showPage(pageId) {
-            pages.forEach(page => page.classList.add('hidden'));
-            document.getElementById(pageId).classList.remove('hidden');
-            if (pageId === 'category-screen') loadProducts('All', 'category-product-grid');
-            if (pageId === 'orders-screen') loadUserOrders();
-        }
-        
-        // --- PRODUCT LOGIC (UPDATED for Per-Product Settings) ---
-        function createProductCard(productId, product) {
-            const card = document.createElement('div');
-            // Add 'unavailable' class if product.available is false
-            card.className = `product-card ${product.available === false ? 'unavailable' : ''}`;
-            card.innerHTML = `<img src="${product.imageURL}" alt="${product.name}"><div class="product-card-info"><h3>${product.name}</h3><p class="price">₹${product.price}</p><button>Buy Now</button></div>`;
-            
-            // Only add click listener if the product is available
-            if (product.available !== false) {
-                card.addEventListener('click', () => showProductDetailPopup(productId, product));
-            }
-            return card;
-        }
+        // 1. START CALL & FETCH DATA
+        async function initiateCall() {
+            const email = document.getElementById('userEmail').value.trim().toLowerCase();
+            if(!email) return showToast("Enter your registered email.");
 
-        function loadProducts(category = 'All', gridId = 'product-grid') {
-            const grid = document.getElementById(gridId);
-            grid.innerHTML = '<div class="spinner"></div>';
-            const query = category === 'All' ? db.ref('products') : db.ref('products').orderByChild('category').equalTo(category);
-            query.once('value').then(snapshot => {
-                grid.innerHTML = '';
-                if (snapshot.exists()) {
-                    snapshot.forEach(child => {
-                        const product = child.val();
-                        // Only render products that are available (available is not false)
-                        if (product.available !== false) {
-                           grid.appendChild(createProductCard(child.key, product));
-                        }
+            // Unlock Audio Context immediately on click (Crucial for mobile)
+            ui.ringtone.volume = 0.6;
+            ui.ringtone.currentTime = 0;
+            ui.ringtone.play().catch(e=>console.log("Audio unlock blocked by browser."));
+
+            switchScreen(ui.email, ui.call);
+            ui.statusText.innerText = "Ringing...";
+            ui.pulse.parentElement.classList.remove('speaking');
+
+            try {
+                // Fetch User
+                const usersRef = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
+                const snapshot = await get(usersRef);
+                
+                if (!snapshot.exists()) {
+                    throw new Error("Email not registered on Battletruth.");
+                }
+
+                let uid = "";
+                snapshot.forEach(child => { uid = child.key; userData = child.val(); });
+
+                // Check Deposit History
+                const walletSnap = await get(ref(db, `walletHistory/${uid}`));
+                hasDeposit = false;
+                if(walletSnap.exists()){
+                    walletSnap.forEach(tx => {
+                        if(tx.val().type === 'up') hasDeposit = true;
                     });
-                } else {
-                    grid.innerHTML = '<p>No products found.</p>';
                 }
-            });
-        }
-        
-        document.querySelectorAll('.filter-btn').forEach(btn => btn.addEventListener('click', () => {
-            document.querySelector('.filter-btn.active').classList.remove('active');
-            btn.classList.add('active');
-            loadProducts(btn.dataset.category, 'category-product-grid');
-        }));
 
-        // --- MODALS & ORDER FLOW (UPDATED for Per-Product Settings) ---
-        function showProductDetailPopup(productId, product) {
-            productToOrder = { id: productId, ...product };
-            const popup = document.getElementById('product-detail-popup');
-            popup.innerHTML = `
-                <div class="modal-content">
-                    <img src="${product.imageURL}" alt="${product.name}">
-                    <h2>${product.name}</h2>
-                    <p>${product.description || 'No description available.'}</p>
-                    <h3 style="color:var(--primary-color); margin:10px 0;">₹${product.price}</h3>
-                    <button id="popup-buy-now-btn" style="width:100%; padding:12px; border:none; border-radius:8px; background:var(--primary-color); color:white; cursor:pointer;">Proceed to Buy</button>
-                    <button onclick="closeAllPopups()" style="width:100%; padding:10px; border:none; background:transparent; margin-top:10px; cursor:pointer;">Close</button>
-                </div>`;
-            popup.classList.remove('hidden');
-            document.getElementById('popup-buy-now-btn').addEventListener('click', showOrderFormPopup);
-        }
-        
-        async function showOrderFormPopup() {
-            let userName = '';
-            const user = auth.currentUser;
-            if (user && !user.isAnonymous) {
-                const userSnapshot = await db.ref(`users/${user.uid}`).once('value');
-                if (userSnapshot.exists()) userName = userSnapshot.val().name || '';
+                // Data Loaded -> Now Generate & Speak Main Menu
+                const menuText = "Battletruth support team mein aapka swagat hai. Apne account detail aur status janne ke liye ek dabaye. Refund aur settlement jankari ke liye do dabaye. Withdraw request pending ya naya lena chahte hai to char dabaye. Kisi aur samasya ki jankari ke liye paanch dabaye.";
+                
+                await generateAndSpeak(menuText, 'MAIN_MENU');
+
+            } catch (err) {
+                ui.ringtone.pause();
+                showToast(err.message || "Network Error");
+                endCall(true);
             }
+        }
+
+        // 2. ELEVENLABS TTS GENERATOR
+        async function generateAndSpeak(text, nextState) {
+            if(isProcessingAudio) return;
+            isProcessingAudio = true;
+
+            // Stop any previous speech
+            if(currentAudioObj) { currentAudioObj.pause(); currentAudioObj = null; }
+            clearTimeout(inactivityTimer);
             
-            const popup = document.getElementById('order-form-popup');
-            let paymentOptionsHtml = '';
-            // DESTRUCTURE settings from the specific product, with defaults
-            const { paymentMode = 'COD' } = productToOrder;
-
-            if (paymentMode === 'Both') {
-                paymentOptionsHtml = `<div class="payment-options-container"><div class="payment-option"><input type="radio" id="cod" name="paymentMethod" value="COD" checked><label for="cod">Cash on Delivery (COD)</label></div><div class="payment-option"><input type="radio" id="upi" name="paymentMethod" value="UPI"><label for="upi">Online Payment</label></div></div>`;
-            } else if (paymentMode === 'COD') {
-                paymentOptionsHtml = `<input type="hidden" name="paymentMethod" value="COD"><p style="text-align:center; margin-top:15px; background: #eee; padding: 10px; border-radius: 8px;">Only Cash on Delivery is available for this item.</p>`;
-            } else if (paymentMode === 'UPI') {
-                paymentOptionsHtml = `<input type="hidden" name="paymentMethod" value="UPI"><p style="text-align:center; margin-top:15px; background: #eee; padding: 10px; border-radius: 8px;">Only Online Payment is available for this item.</p>`;
-            }
-
-            popup.innerHTML = `
-                 <div class="modal-content">
-                    <h3>Shipping Details</h3>
-                    <form id="order-form">
-                        <input type="text" id="order-name" placeholder="Full Name" value="${userName}" required>
-                        <input type="text" id="order-address" placeholder="Full Delivery Address" required>
-                        <input type="tel" id="order-phone" placeholder="Phone Number" required>
-                        ${paymentOptionsHtml}
-                        <div class="modal-buttons">
-                            <button type="button" id="cancel-btn" onclick="closeAllPopups()">Cancel</button>
-                            <button type="submit" id="confirm-order-btn">Confirm Order</button>
-                        </div>
-                    </form>
-                </div>`;
-            popup.classList.remove('hidden');
-            document.getElementById('order-form').addEventListener('submit', handleOrderConfirmation);
-        }
-        
-        function handleOrderConfirmation(e) {
-            e.preventDefault();
-            const customerDetails = { name: document.getElementById('order-name').value.trim(), address: document.getElementById('order-address').value.trim(), phone: document.getElementById('order-phone').value.trim() };
-            if (!customerDetails.name || !customerDetails.address || !customerDetails.phone) { alert("Please fill all shipping details."); return; }
+            // UI Status
+            ui.statusText.innerText = "Processing...";
+            ui.pulse.parentElement.classList.remove('speaking');
             
-            const paymentMethodInput = document.querySelector('input[name="paymentMethod"]:checked') || document.querySelector('input[name="paymentMethod"]');
-            const paymentMethod = paymentMethodInput.value;
+            // Keep ringing while generating audio (so there is no dead silence)
+            ui.ringtone.play().catch(()=>{});
 
-            if (paymentMethod === 'COD') {
-                createOrderInFirebase({ ...customerDetails, paymentMethod: 'COD' });
-            } else {
-                initiateRazorpayPayment(customerDetails);
-            }
-        }
-        
-        function initiateRazorpayPayment(customerDetails) {
-            const { razorpayKey, razorpayLink, price, name } = productToOrder;
+            try {
+                const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
+                    method: 'POST',
+                    headers: { 'xi-api-key': ELEVEN_LABS_KEY, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: text,
+                        model_id: "eleven_multilingual_v2",
+                        voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+                    })
+                });
 
-            // Priority 1: Use Razorpay Link if available
-            if (razorpayLink) {
-                window.open(razorpayLink, '_blank');
-                // Note: We can't confirm payment this way, so we don't create an order here.
-                // This is for simple redirection. A more robust solution would use webhooks.
-                alert("You are being redirected to a secure payment page.");
-                closeAllPopups();
-                return;
-            }
+                if(!response.ok) throw new Error("Voice API Failed");
+                
+                const blob = await response.blob();
+                const audioUrl = URL.createObjectURL(blob);
+                
+                // Audio is ready -> Stop ringing
+                ui.ringtone.pause();
+                
+                currentAudioObj = new Audio(audioUrl);
+                currentAudioObj.play();
 
-            // Priority 2: Use Razorpay Key for checkout
-            if (razorpayKey) {
-                closeAllPopups();
-                loader.classList.remove('hidden');
-                const options = {
-                    key: razorpayKey,
-                    amount: price * 100,
-                    currency: "INR",
-                    name: "SmartMart",
-                    description: `Payment for ${name}`,
-                    handler: (response) => createOrderInFirebase({ ...customerDetails, paymentMethod: "UPI", paymentId: response.razorpay_payment_id }),
-                    prefill: { name: customerDetails.name, contact: customerDetails.phone },
-                    theme: { color: "#27ae60" },
-                    modal: { ondismiss: () => loader.classList.add('hidden') }
+                ui.statusText.innerText = "Agent Speaking...";
+                ui.pulse.parentElement.classList.add('speaking');
+                isProcessingAudio = false;
+
+                // When audio finishes
+                currentAudioObj.onended = () => {
+                    ui.pulse.parentElement.classList.remove('speaking');
+                    ui.statusText.innerText = "Listening for keypad...";
+                    currentState = nextState;
+                    
+                    if(nextState === 'HANGUP') {
+                        endCall(false);
+                        return;
+                    }
+
+                    if(nextState === 'OPEN_OTHER_ISSUE') {
+                        endCall(false, true); // Keep app open
+                        switchScreen(ui.call, ui.other);
+                        return;
+                    }
+
+                    // 8 Second timeout if user does not press anything
+                    inactivityTimer = setTimeout(() => {
+                        handleTimeout();
+                    }, 8000);
                 };
-                const rzp = new Razorpay(options);
-                rzp.on('payment.failed', response => { alert("Payment Failed: " + response.error.description); loader.classList.add('hidden'); });
-                rzp.open();
-            } else {
-                // Fallback: If no key or link is present for a UPI-enabled product
-                alert("Online payment is currently unavailable for this product. Please choose COD if possible or contact support.");
+
+            } catch (e) {
+                console.error(e);
+                isProcessingAudio = false;
+                ui.ringtone.pause();
+                showToast("Connection weak. Please retry.");
+                endCall(true);
             }
         }
 
-        function createOrderInFirebase(details) {
-            loader.classList.remove('hidden');
-            // USE per-product settings
-            const { id, name, price, cancelHours = 2, deliveryBoy = '', deliveryPhone = '' } = productToOrder;
-            
-            const orderId = db.ref().child(`orders/${currentUserId}`).push().key;
-            const cancelDeadline = Date.now() + (cancelHours * 3600 * 1000);
-            
-            const orderData = {
-                productId: id,
-                productName: name,
-                price: price,
-                customerName: details.name,
-                address: details.address,
-                phone: details.phone,
-                status: "Pending",
-                paymentMethod: details.paymentMethod,
-                paymentId: details.paymentId || "N/A",
-                timestamp: firebase.database.ServerValue.TIMESTAMP,
-                cancelDeadline: cancelDeadline,
-                deliveryBoy: deliveryBoy,       // From product
-                deliveryPhone: deliveryPhone    // From product
-            };
-
-            db.ref(`orders/${currentUserId}/${orderId}`).set(orderData).then(() => showSuccessPopup()).catch(err => {
-                alert("Order failed: " + err.message);
-                loader.classList.add('hidden');
-            });
-        }
-        
-        function showSuccessPopup() {
-            closeAllPopups();
-            loader.classList.add('hidden');
-            const popup = document.getElementById('success-popup');
-            popup.innerHTML = `<div class="modal-content"><div class="success-animation"><svg class="tick-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle class="tick-mark__circle" cx="26" cy="26" r="25" fill="none"/><path class="tick-mark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg></div><h2 style="text-align: center; margin-top: 15px;">Order Placed Successfully!</h2></div>`;
-            popup.classList.remove('hidden');
-            setTimeout(() => {
-                closeAllPopups();
-                document.querySelector('.nav-item[data-page="orders-screen"]').click();
-            }, 3000);
+        // 3. LOGIC HANDLERS
+        function checkEligibility() {
+            if((userData.balance || 0) < 5) return "LOW_COINS";
+            if(!hasDeposit) return "NO_DEPOSIT";
+            return "ELIGIBLE";
         }
 
-        function closeAllPopups() {
-            document.getElementById('product-detail-popup').classList.add('hidden');
-            document.getElementById('order-form-popup').classList.add('hidden');
-            document.getElementById('success-popup').classList.add('hidden');
+        function handleTimeout() {
+            generateAndSpeak("Aapki taraf se hume koi pratikriya nahi mili. Support team mein judne ke liye dhanyawad.", 'HANGUP');
         }
 
-        // --- "YOUR ORDERS" SCREEN LOGIC (UPDATED) ---
-        function loadUserOrders() {
-            const list = document.getElementById('orders-list');
-            list.innerHTML = '<div class="spinner"></div>';
-            if (!currentUserId) { list.innerHTML = '<p>Please log in to see your orders.</p>'; return; }
+        function handleKeypad(digit) {
+            if(navigator.vibrate) navigator.vibrate(50); // Haptic feedback
             
-            const ordersRef = db.ref(`orders/${currentUserId}`).orderByChild('timestamp');
-            ordersRef.on('value', snapshot => {
-                list.innerHTML = '';
-                if (snapshot.exists()) {
-                    let orders = [];
-                    snapshot.forEach(child => orders.push({ id: child.key, ...child.val() }));
-                    orders.reverse().forEach(order => list.innerHTML += createOrderCard(order));
-                    attachCancelListeners();
-                } else {
-                    list.innerHTML = '<p>You have not placed any orders yet.</p>';
-                }
-            });
-        }
-        
-        function createOrderCard(order) {
-            const { id, productName, price, status, deliveryBoy, deliveryPhone, cancelDeadline } = order;
-            const orderDate = new Date(order.timestamp).toLocaleDateString();
+            // Interrupt current speaking immediately
+            if(currentAudioObj) { currentAudioObj.pause(); currentAudioObj = null; }
+            clearTimeout(inactivityTimer);
+            ui.pulse.parentElement.classList.remove('speaking');
             
-            const statuses = ['Pending', 'Accepted', 'Shipping', 'Delivered'];
-            const currentStatusIndex = statuses.indexOf(status);
-            const progressWidth = currentStatusIndex >= 0 ? (currentStatusIndex / (statuses.length - 1)) * 100 : 0;
-            
-            const canCancel = status === 'Pending' && Date.now() < cancelDeadline;
-            const cancelBtnHtml = canCancel ? `<button class="cancel-order-btn" data-order-id="${id}">Cancel Order</button>` : '';
+            if(isProcessingAudio) return; // Prevent double pressing while generating
 
-            // This part already works perfectly for showing delivery info
-            const deliveryInfoHtml = deliveryBoy ? `<div class="delivery-info-box"><strong>Delivery Partner:</strong> ${deliveryBoy}<br><strong>Contact:</strong> <a href="tel:${deliveryPhone}">${deliveryPhone}</a></div>` : '';
-
-            const trackerHtml = !['Cancelled', 'Unsuccessful'].includes(status) ? `<div class="status-tracker"><div class="tracker-line" style="width: ${progressWidth}%;"></div>${statuses.map((s, index) => `<div class="status-step ${index <= currentStatusIndex ? 'completed' : ''}"><div class="status-dot"></div><p>${s}</p></div>`).join('')}</div>` : '';
-
-            return `<div class="order-card-new"><div class="order-header"><div class="order-header-info"><h4>${productName}</h4><p>Price: ₹${price} &nbsp;&bull;&nbsp; Date: ${orderDate}</p></div><span class="status-badge status-${status}">${status}</span></div>${trackerHtml}${deliveryInfoHtml}${cancelBtnHtml}</div>`;
-        }
-        
-        function attachCancelListeners() {
-            document.getElementById('orders-list').addEventListener('click', e => {
-                if (e.target.matches('.cancel-order-btn')) {
-                    const orderId = e.target.dataset.orderId;
-                    if (confirm("Are you sure you want to cancel this order?")) {
-                        db.ref(`orders/${currentUserId}/${orderId}/status`).set("Cancelled");
+            if (currentState === 'MAIN_MENU') {
+                if (digit === '1') {
+                    // Account Status
+                    const elg = checkEligibility();
+                    let msg = `Aapka naam ${userData.username} hai. Aur aapke account mein ${userData.balance || 0} coins hain. `;
+                    
+                    if (elg === 'ELIGIBLE') {
+                        msg += "Aap eligible hain. Agar aap refund lena chahte hain to ek dabaye. Agar aap withdraw lena chahte hain to do dabaye.";
+                        generateAndSpeak(msg, 'WAIT_REF_WD');
+                    } else if (elg === 'LOW_COINS') {
+                        msg += "Kyunki aapke account mein paanch se kam coins hain, isliye aap withdraw ya refund ke liye eligible nahi hain. Dhanyawad.";
+                        generateAndSpeak(msg, 'HANGUP');
+                    } else {
+                        msg += "Aapke account mein koi deposit history nahi mili hai. Isliye aap eligible nahi hain. Dhanyawad.";
+                        generateAndSpeak(msg, 'HANGUP');
+                    }
+                } 
+                else if (digit === '2' || digit === '4') {
+                    // Direct Refund or Withdraw
+                    const elg = checkEligibility();
+                    if (elg === 'ELIGIBLE') {
+                        let msg = "Aap eligible hain. Customer support se judne aur process complete karne ke liye teen dabaye.";
+                        generateAndSpeak(msg, 'WAIT_AGENT_CONNECT');
+                    } else if (elg === 'LOW_COINS') {
+                        generateAndSpeak("Aapke account mein paanch se kam coins hain. Aap eligible nahi hain. Dhanyawad.", 'HANGUP');
+                    } else {
+                        generateAndSpeak("Aapke account mein koi deposit history ya add coin ki jankari nahi mili. Jiske bina aap eligible nahi hain. Dhanyawad.", 'HANGUP');
                     }
                 }
-            });
+                else if (digit === '5') {
+                    // Other Issue
+                    generateAndSpeak("Kripya apni samasya screen par diye gaye box mein type karein. Dhanyawad.", 'OPEN_OTHER_ISSUE');
+                }
+                else {
+                    generateAndSpeak("Kripya sahi button dabaye. Ek, do, char, ya paanch dabaye.", 'MAIN_MENU');
+                }
+            } 
+            else if (currentState === 'WAIT_REF_WD') {
+                if (digit === '1' || digit === '2') {
+                    // Selected refund or withdraw -> Ask to connect to support
+                    generateAndSpeak("Customer support se judne aur process complete karne ke liye teen dabaye.", 'WAIT_AGENT_CONNECT');
+                } else {
+                    generateAndSpeak("Kripya sahi button dabaye. Refund ke liye ek, Withdraw ke liye do dabaye.", 'WAIT_REF_WD');
+                }
+            }
+            else if (currentState === 'WAIT_AGENT_CONNECT') {
+                if (digit === '3') {
+                    // Redirect to WhatsApp
+                    redirectToWhatsApp("Manual Refund / Withdraw Request");
+                } else {
+                    generateAndSpeak("Kripya sirf teen dabaye.", 'WAIT_AGENT_CONNECT');
+                }
+            }
         }
+
+        // 4. UTILITY FUNCTIONS
+        function endCall(isManual = false, keepAppOpen = false) {
+            ui.ringtone.pause();
+            if (currentAudioObj) currentAudioObj.pause();
+            clearTimeout(inactivityTimer);
+            isProcessingAudio = false;
+            currentState = 'INIT';
+            ui.pulse.parentElement.classList.remove('speaking');
+            
+            if(!keepAppOpen) {
+                // Delay slightly so UI looks smooth before going back to email screen
+                setTimeout(() => {
+                    switchScreen(ui.call, ui.email);
+                    document.getElementById('userEmail').value = '';
+                }, isManual ? 0 : 1500); 
+            }
+        }
+
+        function redirectToWhatsApp(intent) {
+            endCall(false, true); // End audio cleanly
+            switchScreen(ui.call, ui.success);
+            
+            const message = `Hello Support Team,\n\n*Request Type:* ${intent}\n*Account Name:* ${userData.username}\n*Coins Balance:* ${userData.balance || 0}\n*Email ID:* ${userData.email}\n\nPlease check my eligibility and process this request manually. Thank you.`;
+            const waUrl = `https://wa.me/${SUPPORT_NUMBER}?text=${encodeURIComponent(message)}`;
+            
+            setTimeout(() => { window.location.href = waUrl; }, 2500);
+        }
+
+        function submitOtherIssue() {
+            const text = document.getElementById('customIssueText').value.trim();
+            if(!text) return showToast("Please type your problem.");
+            
+            switchScreen(ui.other, ui.success);
+            const message = `Hello Support Team,\n\n*Account Name:* ${userData.username}\n*Email ID:* ${userData.email}\n*My Issue:*\n${text}\n\nPlease help me resolve this.`;
+            const waUrl = `https://wa.me/${SUPPORT_NUMBER}?text=${encodeURIComponent(message)}`;
+            
+            setTimeout(() => { window.location.href = waUrl; }, 2500);
+        }
+
     </script>
 </body>
 </html>
